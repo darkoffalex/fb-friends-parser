@@ -33,6 +33,9 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(QT_PATH "C:\\Qt\\6.1.0\\mingw81_64")
 endif()
 
+# Путь к OpenSSL
+set(OPEN_SSL_PATH "C:\\Program Files\\OpenSSL-Win64\\bin")
+
 # Старндартные C/C++ библиотеки для MinGW/GCC (для статической линковки рантайма)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CXX_STANDARD_LIBRARIES}")

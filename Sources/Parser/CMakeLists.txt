@@ -22,7 +22,10 @@ add_executable(${TARGET_NAME}
         "Main.cpp"
         "MainWindow.h"
         "MainWindow.cpp"
-        "MainWindow.ui")
+        "MainWindow.ui"
+
+        "../../Resources/Parser/resources.qrc"
+        "../../Resources/Parser/version.rc")
 
 # Меняем название запускаемого файла в зависимости от типа сборки
 set_property(TARGET ${TARGET_NAME} PROPERTY OUTPUT_NAME "${TARGET_BIN_NAME}$<$<CONFIG:Debug>:_Debug>_${PLATFORM_BIT_SUFFIX}")
@@ -44,7 +47,7 @@ endif()
 # Линковка с библиотеками QT
 target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
-# Копирование необходимых DLL в папку bin после построения
+# Аргументы для "развертывателя" (для копирования необходимых библиотек)
 set(DEPLOY_ARGS "--no-quick-import" "--no-translations" "--no-system-d3d-compiler" "--verbose=0")
 if(STATIC_RUNTIME)
     set(DEPLOY_ARGS ${DEPLOY_ARGS} --no-compiler-runtime)
@@ -52,5 +55,12 @@ else()
     set(DEPLOY_ARGS ${DEPLOY_ARGS} --compiler-runtime)
 endif()
 
+# Копирование необходимых DLL'ок QT в папку Bin после построения
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${QT_PATH}\\bin\\windeployqt.exe ${DEPLOY_ARGS}
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COMMENT "Copying DLLs" VERBATIM)
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COMMENT "Copying QT DLLs" VERBATIM)
+
+# Копирование необходимых DLL'ок OpenSSL в папку Bin после построения
+ADD_CUSTOM_COMMAND(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OPEN_SSL_PATH}\\libssl-1_1-x64.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        COMMAND ${CMAKE_COMMAND} -E copy ${OPEN_SSL_PATH}\\libcrypto-1_1-x64.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        COMMENT "Copying OpenSSL DLLs" VERBATIM)

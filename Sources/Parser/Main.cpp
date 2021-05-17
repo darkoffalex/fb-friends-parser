@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QIcon>
 #include "MainWindow.h"
 
 /**
@@ -14,6 +15,7 @@ int main(int argc, char* argv[])
 
     // Создать и показать основной окно
     MainWindow mainWindow;
+    mainWindow.setWindowIcon(QIcon(":/icons/icon.png"));
     mainWindow.show();
 
     // Звпуск
