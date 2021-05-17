@@ -15,110 +15,168 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="labelUsername">
-     <property name="text">
-      <string>Имя или ID пользователья Facebook</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="editUsername"/>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelCookie">
-     <property name="text">
-      <string>Cookie для авторизации</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPlainTextEdit" name="textBoxCookie">
+    <widget class="QGroupBox" name="gbAuth">
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>100</height>
+       <height>200</height>
       </size>
      </property>
+     <property name="title">
+      <string>Авторизация</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="labelCookie">
+        <property name="text">
+         <string>Cookie для авотризации :</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="editCookie"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelBrowser">
+        <property name="text">
+         <string>Притвориться браузером :</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBrowser">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="btnConnect">
-     <property name="text">
-      <string>Подключиться</string>
+    <widget class="QGroupBox" name="gbParsing">
+     <property name="title">
+      <string>Парсинг</string>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="labelState">
-       <property name="text">
-        <string>Состояние :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="labelStateName">
-       <property name="text">
-        <string>Не подключено</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnParseStart">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Начать парсинг</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QTableWidget" name="parsedFriendsTable">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="columnCount">
-      <number>3</number>
-     </property>
-     <column>
-      <property name="text">
-       <string>Имя</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Инфо</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Ссылка</string>
-      </property>
-     </column>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="labelUsername">
+        <property name="text">
+         <string>Имя пользователя или ID</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="editUsername"/>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="hlControls">
+        <item>
+         <widget class="QPushButton" name="btnParseStart">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>▶</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnParseStop">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>⬛</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnParsePause">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>▌▌</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelStatus">
+          <property name="text">
+           <string>Состояние: </string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelStatusName">
+          <property name="text">
+           <string>Остановлено (0 / 0 друзей)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="lhFilter">
+        <item>
+         <widget class="QLineEdit" name="editFilter"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnFilter">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Фильтрация</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableWidget">
+        <column>
+         <property name="text">
+          <string>Имя</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Ссылка</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Инфо</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
