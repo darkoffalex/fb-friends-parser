@@ -24,7 +24,7 @@ else()
 endif()
 
 # Статическая линковка рантайма
-set(STATIC_RUNTIME ON)
+set(STATIC_RUNTIME OFF)
 
 # Путь к QT
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

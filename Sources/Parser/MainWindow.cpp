@@ -104,7 +104,7 @@ void MainWindow::updateStatusLabel()
     QMap<Status,QString> statusNames = {};
     statusNames[Status::eStopped] = "Остановлено";
     statusNames[Status::ePaused] = "Приостановлено";
-    statusNames[Status::eStopped] = "Остановлено";
+    statusNames[Status::eParsing] = "Сбор данных";
 
     // Установить текст
     this->ui_->labelStatusName->setText(statusNames[this->status_] + " " + friendsCounterLabel);
