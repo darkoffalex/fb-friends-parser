@@ -80,6 +80,11 @@ private slots:
      */
     void on_btnParseStop_clicked();
 
+    /**
+     * \brief Клик по кнопке "фильтрация"
+     */
+    void on_btnFilter_clicked();
+
 private:
     /// Указатель на UI объект
     Ui::MainWindow* ui_;
@@ -136,4 +141,10 @@ private:
      * \return Удалось ли получить
      */
     bool parseFriends();
+
+    /**
+     * \brief Фильтрация таблицы
+     * \param conditionString Критерий
+     */
+    void applyFiltration(const QString& conditionString);
 };

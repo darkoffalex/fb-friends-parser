@@ -234,6 +234,33 @@ bool MainWindow::parseFriends()
     return parsed;
 }
 
+/**
+ * \brief Фильтрация таблицы
+ * \param conditionString Критерий
+ */
+void MainWindow::applyFiltration(const QString &conditionString)
+{
+    // Показать все записи
+    for(int i = 0; i < ui_->tableWidget->rowCount(); i++)
+        ui_->tableWidget->showRow(i);
+
+    // Если критерий указан
+    if(!conditionString.isEmpty())
+    {
+        // Скрыть все записи
+        for(int i = 0; i < ui_->tableWidget->rowCount(); i++)
+            ui_->tableWidget->hideRow(i);
+
+        // Найти записи удовлетворяющие критерии
+        auto items = ui_->tableWidget->findItems(conditionString,Qt::MatchContains);
+
+        // Показать найденные записи
+        for(auto item : items)
+            ui_->tableWidget->showRow(item->row());
+    }
+
+}
+
 /** S L O T S **/
 
 /**
@@ -329,6 +356,9 @@ void MainWindow::onReplyFinished()
  */
 void MainWindow::on_btnParseStart_clicked()
 {
+    // Убрать фильтрацию с таблицы
+    this->applyFiltration("");
+
     // Если отсутствует имя пользователя
     if(this->ui_->editUsername->text().isEmpty() || this->ui_->editCookie->toPlainText().isEmpty())
     {
@@ -388,5 +418,13 @@ void MainWindow::on_btnParseStop_clicked()
 {
     this->ui_->btnParseStop->setEnabled(false);
     this->status_ = Status::eStopped;
+}
+
+/**
+ * \brief Клик по кнопке "фильтрация"
+ */
+void MainWindow::on_btnFilter_clicked()
+{
+    this->applyFiltration(this->ui_->editFilter->text());
 }
 
