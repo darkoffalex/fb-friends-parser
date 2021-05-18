@@ -18,7 +18,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 # Добавляем .exe (проект в Visual Studio)
-add_executable(${TARGET_NAME}
+add_executable(${TARGET_NAME} WIN32
         "Main.cpp"
         "MainWindow.h"
         "MainWindow.cpp"

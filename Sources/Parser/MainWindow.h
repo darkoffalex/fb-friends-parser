@@ -23,7 +23,7 @@ public:
     /**
      * \brief Состояния приложения
      */
-    enum class Status
+    enum class Status : quint32
     {
         // Остановлено / не запущено
         eStopped = 0,
@@ -31,6 +31,33 @@ public:
         ePaused = 1,
         // В процессе
         eParsing = 2
+    };
+
+    /**
+     * \brief Заголовки для эмитации браузера
+     */
+    enum class UserAgentType : quint32
+    {
+        // Отправлять заголовки в стиле Firefox
+        eMozillaFirefox = 0,
+        // Отправлять заголовки в стиле Chrome
+        eGoogleChrome = 1
+    };
+
+    /**
+     * \brief Типы паттернов для регулярных выражений
+     * \details Поскольку верстка меняется в зависимости от страницы и бразуера, паттерны должны также меняться
+     */
+    enum class ParsingPatternType : quint32
+    {
+        // Паттерн для парсинга кол-ва
+        eFriendsTotalCount,
+        // Паттерн для парсинга URL след. страницы
+        eNextUrl,
+        // Паттерн для парсинга друзей
+        eFriendEntry,
+        // Паттерн для парсинга доп. информации о друге
+        eFriendEntryInfo
     };
 
 public:
@@ -147,4 +174,12 @@ private:
      * \param conditionString Критерий
      */
     void applyFiltration(const QString& conditionString);
+
+    /**
+     * \brief Получить паттерн для регулярного выражения
+     * \param type Тип паттерна
+     * \details Верстка меняется в зависимость от браузера и от того, главная ли это страница. Паттерны должны это учитывать
+     * \return Строка с паттерном
+     */
+    QString getRegExPattern(ParsingPatternType type);
 };

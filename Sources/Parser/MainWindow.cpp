@@ -38,16 +38,16 @@ MainWindow::~MainWindow()
 void MainWindow::initAgentsCombo()
 {
     // Список агентов и соответствующие заголовки
-    QMap<QString,QString> agents = {
-            {"Mozilla Firefox","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"},
-            {"Google Chrome","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"}
+    QMap<QString,UserAgentType> agents = {
+            {"Mozilla Firefox", UserAgentType::eMozillaFirefox},
+            {"Google Chrome",   UserAgentType::eGoogleChrome}
     };
 
     // Пройтись по списку и обновить комбо-бокс
     const auto& m = agents.toStdMap();
     for(const auto& pair : m)
     {
-        this->ui_->comboBrowser->addItem(pair.first,pair.second);
+        this->ui_->comboBrowser->addItem(pair.first,static_cast<quint32>(pair.second));
     }
 
     // Выбрать последний вариант
@@ -63,20 +63,44 @@ void MainWindow::makeHttpRequest()
     QByteArray cookie = QByteArray::fromStdString(ui_->editCookie->toPlainText().toStdString());
 
     // Заголовок агента (для эмуляции бразуера)
-    QByteArray agent = QByteArray::fromStdString(ui_->comboBrowser->currentData().toString().toStdString());
+    UserAgentType headers = static_cast<UserAgentType>(ui_->comboBrowser->currentData().toInt());
 
     // Создать запрос
     QNetworkRequest request(httpUrl_);
-    request.setRawHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-    request.setRawHeader("Accept-Encoding","utf-8");
-    request.setRawHeader("Accept-Language","ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3");
-    request.setRawHeader("Cache-Control","max-age=0");
-    request.setRawHeader("Connection","keep-alive");
-    request.setRawHeader("Cookie",cookie);
-    request.setRawHeader("Host","mbasic.facebook.com");
-    request.setRawHeader("TE","Trailers");
-    request.setRawHeader("Upgrade-Insecure-Requests","1");
-    request.setRawHeader("User-Agent",agent);
+
+    // Добавление заголовков в зависимости от браузера
+    switch (headers)
+    {
+        case UserAgentType::eMozillaFirefox:
+        default:
+            request.setRawHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+            request.setRawHeader("Accept-Encoding","utf-8");
+            request.setRawHeader("Accept-Language","ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3");
+            request.setRawHeader("Cache-Control","max-age=0");
+            request.setRawHeader("Connection","keep-alive");
+            request.setRawHeader("Cookie",cookie);
+            request.setRawHeader("Host","mbasic.facebook.com");
+            request.setRawHeader("TE","Trailers");
+            request.setRawHeader("Upgrade-Insecure-Requests","1");
+            request.setRawHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0");
+            break;
+
+        case UserAgentType::eGoogleChrome:
+            request.setRawHeader("accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+            request.setRawHeader("accept-encoding","utf-8");
+            request.setRawHeader("accept-language","ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
+            request.setRawHeader("cache-control","max-age=0");
+            request.setRawHeader("cookie",cookie);
+            request.setRawHeader("sec-ch-ua",R"(" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90")");
+            request.setRawHeader("sec-ch-ua-mobile","?0");
+            request.setRawHeader("sec-fetch-dest","document");
+            request.setRawHeader("sec-fetch-mode","navigate");
+            request.setRawHeader("sec-fetch-site","none");
+            request.setRawHeader("sec-fetch-user","?1");
+            request.setRawHeader("upgrade-insecure-requests","1");
+            request.setRawHeader("user-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36");
+            break;
+    }
 
     // Очистить загруженные данные
     this->downloadedHtml_.clear();
@@ -117,7 +141,7 @@ void MainWindow::updateStatusLabel()
 bool MainWindow::parseFriendsTotalCount()
 {
     // Регулярные выражения для извлечения кол-ва
-    QRegularExpression rx0(this->firstIteration_ ? R"(<h3 class="ca k">(.+?)<\/h3>)" : R"(<h3 class="bk k">(.+?)<\/h3>)");
+    QRegularExpression rx0(this->getRegExPattern(ParsingPatternType::eFriendsTotalCount));
     QRegularExpression rx1("\\((.+?)\\)");
 
     // Если было совпадение по первому паттерну
@@ -150,7 +174,7 @@ bool MainWindow::parseFriendsTotalCount()
 bool MainWindow::parseNextUrl()
 {
     // Регулярное выражение для получения следующего URL
-    QRegularExpression rx("id=\"m_more_friends\"><a href=\"(.+?)\"><span>");
+    QRegularExpression rx(this->getRegExPattern(ParsingPatternType::eNextUrl));
 
     // Если было совпадение по паттерну
     auto match = rx.match(this->downloadedHtml_);
@@ -171,15 +195,9 @@ bool MainWindow::parseNextUrl()
 bool MainWindow::parseFriends()
 {
     // Регулярное выражение для получения данных о друзях
-    QRegularExpression rx0(
-            this->firstIteration_ ?
-            "<a class=\"ce\" href=\"(.+?)\">(.+?)<\\/a><div class=\"cf cg\">(.+?)<\\/div>" :
-            "<a class=\"bp\" href=\"(.+?)\">(.+?)<\\/a><div class=\"bq br\">(.+?)<\\/div>");
-
+    QRegularExpression rx0(this->getRegExPattern(ParsingPatternType::eFriendEntry));
     // Регулярное выражения для получения извлечения информации о работе
-    QRegularExpression rx1(this->firstIteration_ ?
-                           R"(<span class="by">(.+?)<\/span>)" :
-                           R"(<span class="bs">(.+?)<\/span>)");
+    QRegularExpression rx1(this->getRegExPattern(ParsingPatternType::eFriendEntryInfo));
 
     // Успешно ли получены данные
     bool parsed = false;
@@ -261,6 +279,60 @@ void MainWindow::applyFiltration(const QString &conditionString)
 
 }
 
+/**
+ * \brief Получить паттерн для регулярного выражения
+ * \param type Тип паттерна
+ * \details Верстка меняется в зависимость от браузера и от того, главная ли это страница. Паттерны должны это учитывать
+ * \return Строка с паттерном
+ */
+QString MainWindow::getRegExPattern(MainWindow::ParsingPatternType type)
+{
+    // Информация о выбранном браузере
+    auto agent = static_cast<UserAgentType>(this->ui_->comboBrowser->currentData().toInt());
+
+    // Паттерны (на каждый бразуер свой)
+    QMap<UserAgentType,QString> patterns;
+
+    // В зависимости от типа паттерна
+    switch (type)
+    {
+        // Паттерн для получения кол-ва друзей
+        case ParsingPatternType::eFriendsTotalCount:
+        default:
+        {
+            patterns[UserAgentType::eMozillaFirefox] = this->firstIteration_ ? R"(<h3 class="ca k">(.+?)<\/h3>)" : R"(<h3 class="bk k">(.+?)<\/h3>)";
+            patterns[UserAgentType::eGoogleChrome] = this->firstIteration_ ? R"(<h3 class="bz j">(.+?)<\/h3>)" : R"(<h3 class="bj j">(.+?)<\/h3>)";
+            break;
+        }
+
+        // Паттерн для получения ссылки на след. страницу (не меняется)
+        case ParsingPatternType::eNextUrl:
+        {
+            patterns[UserAgentType::eMozillaFirefox] = "id=\"m_more_friends\"><a href=\"(.+?)\"><span>";
+            patterns[UserAgentType::eGoogleChrome] = "id=\"m_more_friends\"><a href=\"(.+?)\"><span>";
+            break;
+        }
+
+        // Паттерн для извлечения данных по друзьям
+        case ParsingPatternType::eFriendEntry:
+        {
+            patterns[UserAgentType::eMozillaFirefox] = this->firstIteration_ ? "<a class=\"ce\" href=\"(.+?)\">(.+?)<\\/a><div class=\"cf cg\">(.+?)<\\/div>" : "<a class=\"bp\" href=\"(.+?)\">(.+?)<\\/a><div class=\"bq br\">(.+?)<\\/div>";
+            patterns[UserAgentType::eGoogleChrome] = this->firstIteration_ ? "<a class=\"cd\" href=\"(.+?)\">(.+?)<\\/a><div class=\"ce cf\">(.+?)<\\/div>" : "<a class=\"bo\" href=\"(.+?)\">(.+?)<\\/a><div class=\"bp bq\">(.+?)<\\/div>";
+            break;
+        }
+
+        // Паттерн для изалчения подробной информации
+        case ParsingPatternType::eFriendEntryInfo:
+        {
+            patterns[UserAgentType::eMozillaFirefox] = this->firstIteration_ ? R"(<span class="by">(.+?)<\/span>)" : R"(<span class="bs">(.+?)<\/span>)";
+            patterns[UserAgentType::eGoogleChrome] = this->firstIteration_ ? R"(<span class="bx">(.+?)<\/span>)" : R"(<span class="br">(.+?)<\/span>)";
+            break;
+        }
+    }
+
+    return patterns[agent];
+}
+
 /** S L O T S **/
 
 /**
@@ -309,6 +381,18 @@ void MainWindow::onReplyFinished()
     // Если статус был изменен на "остановлено" или же не были получены какие-то данные
     if(status_ == Status::eStopped || !(countParsed && urlParsed && friendsParsed))
     {
+        // Если остановка произошла не по причине ручной остановки, а по причине невозможности получения данных
+        if(status_ != Status::eStopped)
+        {
+            // Сообщение об ошибке
+            QMessageBox msgBox{};
+            msgBox.setText("Не удалось получить необходимые данные из загруженного HTML кода. Процесс будет остановлен.");
+            msgBox.setWindowTitle("Остановка процесса");
+            msgBox.setIcon(QMessageBox::Icon::Information);
+            msgBox.show();
+            msgBox.exec();
+        }
+
         // Сменить статус
         this->status_ = Status::eStopped;
 
@@ -342,6 +426,8 @@ void MainWindow::onReplyFinished()
     this->firstIteration_ = false;
     // Очистить HTML
     this->downloadedHtml_.clear();
+    // Закрыть соединение
+    this->httpReply_->close();
 
     // Если парсинг продолжается
     if(continueParsing)
