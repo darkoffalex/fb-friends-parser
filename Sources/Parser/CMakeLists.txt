@@ -48,7 +48,14 @@ endif()
 target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
 # Аргументы для "развертывателя" (для копирования необходимых библиотек)
-set(DEPLOY_ARGS "--no-quick-import" "--no-translations" "--no-system-d3d-compiler" "--verbose=0")
+set(DEPLOY_ARGS "--no-quick-import" "--no-translations" "--no-system-d3d-compiler" "--no-opengl-sw" "--verbose=0")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(DEPLOY_ARGS ${DEPLOY_ARGS} --debug)
+else()
+    set(DEPLOY_ARGS ${DEPLOY_ARGS} --release)
+endif()
+
 if(STATIC_RUNTIME)
     set(DEPLOY_ARGS ${DEPLOY_ARGS} --no-compiler-runtime)
 else()
